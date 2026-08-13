@@ -111,12 +111,12 @@ Verification method: no `chromium-cli` tool was available, so used a scratch Pla
 ---
 
 ## Phase 8 — Gauging Station Markers
-- [ ] Render static station markers on the map
-- [ ] Each links out to PAGASA station page (no live reading shown)
+- [x] Render static station markers on the map
+- [x] Each links out to PAGASA station page (no live reading shown)
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** Added in `FloodMap.tsx`'s `load` handler using `maplibregl.Marker` + `Popup`, one per entry in `src/data/gauging-stations.ts` (11 stations). Solid flat blue dot (`#2563eb`), distinct from the red/orange/green risk palette so it doesn't get read as a hazard-level indicator. Popup repeats the honest disclaimer already baked into the data model — "Approximate location — not an official PAGASA pin" — and links out to the live FFWS map rather than showing any fabricated reading. Legend (`HazardLegend`) extended with a matching swatch. Verified with a headless-Chromium screenshot: all 11 markers render at their correct positions, and clicking one opens the popup with the right name/river/link. Zero console errors. Markers don't need explicit cleanup — `map.remove()` in the effect's cleanup already tears down everything MapLibre tracks, markers included.
 
 ---
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { gaugingStations } from "@/data/gauging-stations";
 
 /**
  * MapLibre's own worker-URL resolution (relative to its bundled module's
@@ -22,6 +23,7 @@ const RISK_COLORS: Record<string, string> = {
   low: "#16a34a",
 };
 const RISK_FALLBACK_COLOR = "#9ca3af";
+const STATION_COLOR = "#2563eb";
 
 // NCR bounding box (from the source hazard shapefile before simplification)
 const NCR_BOUNDS: [[number, number], [number, number]] = [
@@ -125,6 +127,30 @@ export function FloodMap() {
         map.setPaintProperty("hazard-fill", "fill-opacity", 0.45);
         map.setPaintProperty("hazard-outline", "line-opacity", 0.8);
       });
+
+      // Static gauging-station markers. Coordinates are landmark geocodes,
+      // not official PAGASA pins (see src/data/gauging-stations.ts) — the
+      // popup says so and links out rather than showing a fake live reading.
+      gaugingStations.forEach((station) => {
+        const el = document.createElement("div");
+        el.className = "h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm";
+        el.style.backgroundColor = STATION_COLOR;
+        el.style.cursor = "pointer";
+
+        const popup = new maplibregl.Popup({ offset: 12 }).setHTML(`
+          <div style="font-size:12px;line-height:1.5;max-width:200px;">
+            <p style="font-weight:600;margin:0 0 2px;">${station.name}</p>
+            <p style="margin:0 0 6px;color:#6b7280;">${station.river}</p>
+            <p style="margin:0 0 6px;color:#9ca3af;">Approximate location — not an official PAGASA pin.</p>
+            <a href="${station.pagasaUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;">View PAGASA flood monitoring ↗</a>
+          </div>
+        `);
+
+        new maplibregl.Marker({ element: el })
+          .setLngLat([station.lon, station.lat])
+          .setPopup(popup)
+          .addTo(map);
+      });
     });
 
     return () => {
@@ -161,6 +187,13 @@ function HazardLegend() {
             <span className="text-foreground/80">{entry.label}</span>
           </li>
         ))}
+        <li className="flex items-center gap-2">
+          <span
+            className="h-3 w-3 shrink-0 rounded-full"
+            style={{ backgroundColor: STATION_COLOR }}
+          />
+          <span className="text-foreground/80">Gauging station (approx.)</span>
+        </li>
       </ul>
       <p className="mt-2 max-w-[180px] text-foreground/50">
         Susceptibility zones, not live flood conditions.
