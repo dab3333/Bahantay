@@ -23,7 +23,9 @@ const RISK_COLORS: Record<string, string> = {
   low: "#16a34a",
 };
 const RISK_FALLBACK_COLOR = "#9ca3af";
-const STATION_COLOR = "#2563eb";
+// Distinct from MapLibre's built-in blue "you are here" geolocate dot —
+// stations and the user's own location must never look like the same marker.
+const STATION_COLOR = "#4a3aa7";
 
 // NCR bounding box (from the source hazard shapefile before simplification)
 const NCR_BOUNDS: [[number, number], [number, number]] = [
