@@ -15,9 +15,16 @@ const HISTORY_KEY = "advisory_history";
 const HISTORY_MAX_ENTRIES = 500;
 
 export type Advisory = {
-  text: string;
-  issuedAt: string | null;
+  /** e.g. "NCR/Pasig Marikina Laguna de Bay" — the basin row PAGASA reports this under */
+  basin: string;
+  status: "flood" | "non-flood" | "unknown";
+  /** as displayed on PAGASA's page, e.g. "Flood Watch" / "Non-Flood Watch" */
+  statusLabel: string;
+  /** link to PAGASA's per-basin detail PDF, when published */
+  detailUrl: string | null;
   sourceUrl: string;
+  /** PAGASA does not publish a timestamp for this table — always null for now */
+  issuedAt: string | null;
   fetchedAt: string;
 };
 

@@ -42,15 +42,15 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 3 — PAGASA Scraper
-- [ ] Build `/api/cron/refresh` serverless function
-- [ ] Fetch PAGASA flood bulletin page
-- [ ] Parse advisory text + issued timestamp (cheerio)
-- [ ] Write to `latest_advisory`, append to `advisory_history`
-- [ ] On failure: leave last-known-good data untouched, no throw to caller
+- [x] Build `/api/cron/refresh` serverless function
+- [x] Fetch PAGASA flood page
+- [x] Parse the NCR basin row's Flood Watch / Non-Flood Watch status (cheerio)
+- [x] Write to `latest_advisory`, append to `advisory_history`
+- [x] On failure: leave last-known-good data untouched, no throw to caller
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** PAGASA's flood page has no free-text "advisory bulletin" — it has a Basin Hydrological Forecast table, one row per basin. Scraper (`src/lib/pagasa.ts`) selects the row whose first cell contains "NCR" (currently "NCR/Pasig Marikina Laguna de Bay") and reads its status link's text/class/href. No issued timestamp exists anywhere near the table, so `issuedAt` is always `null` — `fetchedAt` is the only reliable timestamp, consistent with the staleness-display plan in §6. Verified against the live site (`www.pagasa.dost.gov.ph/flood`, requires a browser-like User-Agent) via `GET /api/cron/refresh` in dev, and confirmed the write landed in Upstash. At verification time NCR's real status was "Flood Watch." Route uses `cache: "no-store"` and `export const dynamic = "force-dynamic"` so Next never caches the scrape.
 
 ---
 

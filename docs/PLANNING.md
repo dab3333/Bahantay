@@ -18,11 +18,13 @@ This is honest about data provenance: some layers are static risk classification
 | Source | What it provides | Access method | Update cadence |
 |---|---|---|---|
 | Project NOAH flood hazard shapefiles (100-yr return period, Metro Manila), via BetterGov.ph's Hugging Face mirror | Static hazard polygons (low/moderate/high) for NCR | One-time download (Shapefile → GeoJSON via mapshaper), simplified and committed to repo | Never (static asset) |
-| PAGASA Flood Advisory/Outlook bulletin (pagasa.dost.gov.ph/flood) | Free-text advisory bulletin, issued time | HTML scrape (no documented public API) | Polled on a schedule |
+| PAGASA flood page (pagasa.dost.gov.ph/flood) — Basin Hydrological Forecast table | Per-basin Flood Watch / Non-Flood Watch status, one row per river basin including "NCR/Pasig Marikina Laguna de Bay"; no issued timestamp published | HTML scrape (no documented public API) | Polled on a schedule |
 | PAGASA FFWS gauging stations (Pasig/Marikina/Tullahan) | Station names/rivers; coordinates geocoded from named landmarks via OSM Nominatim (not PAGASA's own pins — flagged `precision: "approximate"`) | Static list maintained by hand, linking out to the FFWS live map — no live reading pulled | Static |
 | ProjectLIGTAS | Reference only — used to cross-check station names, not pulled from directly | — | — |
 
-**Revision note:** the original plan named DENR-MGB's susceptibility map directly, but research (2026-08-13) found no government portal offers a bulk-downloadable version of it — HazardHunterPH is point-query only, and NAMRIA Geoportal is view-only. Project NOAH's shapefiles (DENR-MGB-era flood modeling, ODC-ODbL licensed, re-hosted by BetterGov.ph) are the actual usable substitute; see `public/data/ATTRIBUTION.md`.
+**Revision note (hazard data):** the original plan named DENR-MGB's susceptibility map directly, but research (2026-08-13) found no government portal offers a bulk-downloadable version of it — HazardHunterPH is point-query only, and NAMRIA Geoportal is view-only. Project NOAH's shapefiles (DENR-MGB-era flood modeling, ODC-ODbL licensed, re-hosted by BetterGov.ph) are the actual usable substitute; see `public/data/ATTRIBUTION.md`.
+
+**Revision note (advisory data):** the original plan assumed PAGASA publishes a free-text "advisory bulletin." Inspecting the real page (2026-08-13) found no such bulletin — what actually exists is a Basin Hydrological Forecast table with a discrete Flood Watch / Non-Flood Watch status per basin, and no issued timestamp anywhere near it. The app scrapes the NCR-specific row from that table instead of a text bulletin; see `Advisory` in `src/lib/storage.ts` and the scraper in `src/lib/pagasa.ts`.
 
 **Explicitly out of scope for v1:** MMDA X/Twitter posts (no usable free API tier), DPWH open data (project/spending data, not live status), any reverse-engineered non-public telemetry feed.
 
@@ -35,17 +37,17 @@ Vercel Cron (Hobby plan confirmed — capped at once/day, ±59 min precision)
      than ~20 min, the request itself triggers a fresh scrape (capped to
      avoid hammering PAGASA), approximating the original 15–30 min goal
    → /api/cron/refresh (serverless function, shared scrape logic)
-       - fetches PAGASA bulletin HTML
-       - parses advisory text + issued timestamp (cheerio)
+       - fetches PAGASA's flood page HTML
+       - parses the NCR basin row's Flood Watch / Non-Flood Watch status (cheerio)
        - writes normalized JSON to storage
        - appends to advisory_history list
        - on fetch/parse failure: leaves last-known-good data untouched,
          no alerting — staleness is surfaced in the UI instead (§4)
 
 Storage: Upstash Redis (Vercel Marketplace — "Vercel KV" was deprecated in favor of Marketplace integrations)
-   - latest_advisory: { text, issuedAt, sourceUrl, fetchedAt }
-   - advisory_history: list of past { text, issuedAt, sourceUrl, fetchedAt }
-     entries, appended each successful run
+   - latest_advisory: { basin, status, statusLabel, detailUrl, sourceUrl, issuedAt, fetchedAt }
+   - advisory_history: list of past entries of the same shape, appended each
+     successful run (issuedAt is always null — PAGASA publishes none)
 
 Static assets (bundled at build time, not fetched at runtime)
    - NCR flood susceptibility GeoJSON (simplified via mapshaper)
