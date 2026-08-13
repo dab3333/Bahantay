@@ -77,13 +77,19 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 6 — Map UI
-- [ ] Integrate MapLibre GL
-- [ ] Render NCR hazard polygons with solid, distinct per-level colors (no gradient ramp)
-- [ ] Add legend clarifying "susceptibility zones," not live conditions
+- [x] Integrate MapLibre GL
+- [x] Render NCR hazard polygons with solid, distinct per-level colors (no gradient ramp)
+- [x] Add legend clarifying "susceptibility zones," not live conditions
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** `src/components/FloodMap.tsx`, rendered full-bleed from `/`. Basemap is CARTO Positron (`basemaps.cartocdn.com`, free, no key, flat/minimal by design — fits §4 exactly). Hazard layer reads `/data/ncr-flood-susceptibility.geojson` as a GeoJSON source with `fill`/`line` layers, colored via a `match` expression on `risk` using the same hex values as the `--risk-*` CSS tokens (duplicated by hand — MapLibre paint expressions can't read CSS custom properties). Legend is a plain absolutely-positioned div, not a MapLibre control.
+
+**Bug found and fixed — MapLibre's Web Worker silently fails to load under Next.js's bundler.** MapLibre parses vector/GeoJSON tiles in a Worker, and computes that worker's script URL relative to its own bundled module's `import.meta.url`. Both Turbopack and webpack rewrite/relocate that module during bundling, so the relative path MapLibre computes doesn't exist at the served location — the `Worker` construction resolves to the page's own HTML instead of real JS, closes immediately, and the map's basemap/hazard tiles never render (blank canvas, *zero* console errors, since the failure is swallowed inside MapLibre's worker-loading code). This is why a bare non-Next.js HTML page with the identical MapLibre setup worked fine while the Next.js app didn't.
+
+Fix: copied `node_modules/maplibre-gl/dist/{maplibre-gl-worker.mjs,maplibre-gl-shared.mjs}` (the second is a dependency of the first) to `public/maplibre/`, and call `maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs")` before constructing any `Map` — this is a real exported API (`setWorkerUrl`/`config.WORKER_URL`), not a hack. Verified fixed under both Turbopack (the project's actual bundler) and webpack. `public/maplibre/**` is excluded from ESLint (`eslint.config.mjs`) since it's vendored, not authored, code. **Caveat:** this worker bundle is pinned to whatever `maplibre-gl` version is installed — bumping the package requires re-copying these two files, or the worker will silently break again the same way.
+
+Verification method: no `chromium-cli` tool was available, so used a scratch Playwright script (headless Chromium with `--use-angle=swiftshader-webgl` for software WebGL) driven manually — confirmed via screenshot that the basemap and all three risk-color hazard bands render correctly, and confirmed zero console/page errors.
 
 ---
 

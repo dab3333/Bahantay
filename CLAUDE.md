@@ -26,7 +26,7 @@ Do this as part of finishing the work, not as a separate pass.
 - Vercel Cron → `/api/cron/refresh` scrapes the PAGASA flood bulletin
 - Upstash Redis (via Vercel Marketplace — "Vercel KV" is no longer a native product) stores `latest_advisory` and `advisory_history` through `src/lib/storage.ts`. Credentials are `KV_REST_API_URL`/`KV_REST_API_TOKEN`, not `@upstash/redis`'s `Redis.fromEnv()` defaults.
 - Static NCR flood-susceptibility GeoJSON bundled as a build-time asset (not fetched at runtime)
-- MapLibre GL for the map
+- MapLibre GL for the map. **Do not remove the `maplibregl.setWorkerUrl(...)` call in `src/components/FloodMap.tsx` or the vendored files in `public/maplibre/`** — without it, MapLibre's tile-parsing Worker silently fails to load under Next.js's bundler (both Turbopack and webpack) and the map renders blank with zero console errors. See `docs/BUILD_PLAN.md` Phase 6 for the full explanation. If `maplibre-gl` is ever upgraded, re-copy `node_modules/maplibre-gl/dist/{maplibre-gl-worker.mjs,maplibre-gl-shared.mjs}` into `public/maplibre/` — the vendored copies are pinned to the installed version.
 - Recharts for the advisory-history analytics view (Phase 9) — charts must follow the same flat, no-gradient design constraints as the rest of the UI; load the `dataviz` skill before writing any chart code
 
 ## Design constraints (non-negotiable unless the user says otherwise)

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored MapLibre worker bundle (copied from node_modules, see FloodMap.tsx)
+    "public/maplibre/**",
   ]),
 ]);
 
