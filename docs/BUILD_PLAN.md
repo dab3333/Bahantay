@@ -62,6 +62,8 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 **Completed:** 2026-08-13
 **Notes:** `vercel.json` cron hits `/api/cron/refresh` daily at `0 0 * * *`. Built together with Phase 5 since the SWR logic lives in `/api/advisory` itself — see that phase's notes for the concurrency-lock verification (`acquireRevalidateLock` in `src/lib/storage.ts`, `SET NX EX 60`). Threshold is 20 min, matching the ~15–30 min freshness goal from PLANNING.md §7.
 
+**Deploy fix (unrelated to cron logic, discovered while verifying this phase):** the repo's default branch was `master`, but Vercel's Production Branch was set to `main` (its own default at project-link time) — every push since Phase 0 had only deployed to Preview, never Production. Renamed the branch to `main` (local + GitHub default branch + old `master` deleted) and triggered a manual `vercel deploy --prod` to get Production caught up immediately. Confirmed live: https://bahantay.vercel.app serves the placeholder page, and both `/api/advisory` and `/api/cron/refresh` work correctly in production against the same Upstash instance. Future pushes to `main` should now deploy to Production automatically — worth double-checking after the next push.
+
 ---
 
 ## Phase 5 — Advisory API
