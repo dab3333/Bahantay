@@ -121,13 +121,19 @@ Verification method: no `chromium-cli` tool was available, so used a scratch Pla
 ---
 
 ## Phase 9 — Advisory History & Analytics View
-- [ ] Simple list/timeline of past advisories from `advisory_history`
-- [ ] Recharts view: advisory frequency per day/week, time-since-last-advisory (per PLANNING.md §5 — scope stays to advisory-frequency trends, not flood-depth data)
-- [ ] Chart styling follows dataviz skill + flat/no-gradient constraints
+- [x] Simple list/timeline of past advisories from `advisory_history`
+- [x] Recharts view: advisory frequency per day/week, time-since-last-advisory (per PLANNING.md §5 — scope stays to advisory-frequency trends, not flood-depth data)
+- [x] Chart styling follows dataviz skill + flat/no-gradient constraints
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** New route `/history` (`src/app/history/page.tsx`, async Server Component reading `getAdvisoryHistory()` directly — no client fetch waterfall needed since it's not a live-ticking view like the map's advisory panel). Linked from the main page header ("History & trends →"). Also added `GET /api/advisory/history` as a plain JSON endpoint for consistency with `/api/advisory`, though the page itself doesn't use it.
+
+Followed the `dataviz` skill's procedure in order: "time-since-last-advisory" is a single current value → **stat tile**, not a chart (two tiles: "Last checked", "Checks in last 7 days"). "Frequency per day" is a magnitude-over-time job with one series → **bar chart, sequential single hue** (palette.md's default blue, step 450 `#2a78d6`), no legend box (correct per spec — a legend is only required at 2+ series). Bar spec matches `marks-and-anatomy.md`: rounded top / square baseline (`radius={[4,4,0,0]}`), capped at 24px (`maxBarSize`), hairline solid gridlines, axis ticks in muted ink. Tooltip is per-bar hover with a crosshair-style cursor wash; caught and fixed one real violation during review — Recharts' default tooltip colors the value text with the series hue, which breaks the skill's "text never wears the data color" rule, fixed via `itemStyle`. Chart chrome (grid/axis/tooltip) uses the app's existing `var(--border)`/`var(--foreground)` tokens rather than hardcoded palette hex, so it already follows the site's light/dark mode; only the bar fill itself is a fixed hex (data color, not chrome).
+
+Given real history has only ~6 entries (all from today's testing, all "Flood Watch" — this feature only started collecting today), the 14-day bar chart legitimately shows one populated day and the rest empty. Did not fabricate sample data to make the chart look fuller; verified the honest sparse-data render directly via screenshot instead. Empty-history state (before the first successful scrape ever) shows a plain explanatory message instead of an empty chart.
+
+The `react-hooks/purity` ESLint rule (new in this Next.js/React toolchain) flags direct `Date.now()`/`new Date()` calls inside a page component's own function body, even in an async Server Component — fixed by moving the impure time math into a plain helper function (`ageMs`) called from the component rather than inlined.
 
 ---
 
