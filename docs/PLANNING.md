@@ -64,6 +64,8 @@ Next.js App Router, deployed on Vercel
 ## 4. Visual Design
 
 - **Minimal, modern, flat.** No gradients anywhere — solid fills only, for map polygons, buttons, cards, and backgrounds.
+- Hazard polygon edges are smoothed (Chaikin corner-cutting, applied once at build time to the static GeoJSON) rather than left as the raw jagged output of shapefile simplification — sharp waterway-following spikes read as noisy/unfriendly rather than "flat and clean." Layers fade in on load instead of popping in abruptly.
+- The map centers on the user's actual location on first load (via `GeolocateControl`, with the NCR-wide view as fallback) rather than always opening zoomed out to all of NCR — see `docs/BUILD_PLAN.md` Phase 6.
 - Risk-zone color coding uses solid, distinct hues per level (e.g. high/moderate/low), not a gradient ramp between them.
 - Clean typographic hierarchy over decorative UI chrome — let the map and advisory text carry the page.
 

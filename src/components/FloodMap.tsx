@@ -47,13 +47,30 @@ export function FloodMap() {
     mapRef.current = map;
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    // Auto-locate on first load so the map centers on the user instead of
+    // staying zoomed out to all of NCR. Falls back to the NCR bounds fit
+    // above (already applied) if permission is denied or unavailable.
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: false,
+      showUserLocation: true,
+    });
+    map.addControl(geolocate, "top-right");
+
     map.on("error", (e) => console.error("MapLibre error:", e.error?.message));
 
     map.on("load", () => {
+      geolocate.trigger();
+
       map.addSource(HAZARD_SOURCE_ID, {
         type: "geojson",
         data: "/data/ncr-flood-susceptibility.geojson",
       });
+
+      // Fade the hazard layer in rather than have it pop in as a spiky mass
+      // the instant the GeoJSON finishes parsing.
+      const FADE_MS = 700;
 
       map.addLayer({
         id: "hazard-fill",
@@ -71,7 +88,8 @@ export function FloodMap() {
             RISK_COLORS.low,
             RISK_FALLBACK_COLOR,
           ],
-          "fill-opacity": 0.45,
+          "fill-opacity": 0,
+          "fill-opacity-transition": { duration: FADE_MS },
         },
       });
 
@@ -79,6 +97,10 @@ export function FloodMap() {
         id: "hazard-outline",
         type: "line",
         source: HAZARD_SOURCE_ID,
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
         paint: {
           "line-color": [
             "match",
@@ -92,8 +114,16 @@ export function FloodMap() {
             RISK_FALLBACK_COLOR,
           ],
           "line-width": 1,
-          "line-opacity": 0.8,
+          "line-opacity": 0,
+          "line-opacity-transition": { duration: FADE_MS },
         },
+      });
+
+      // Set on the next frame so the transition above actually animates
+      // from 0 rather than the layer just appearing at full opacity.
+      requestAnimationFrame(() => {
+        map.setPaintProperty("hazard-fill", "fill-opacity", 0.45);
+        map.setPaintProperty("hazard-outline", "line-opacity", 0.8);
       });
     });
 
