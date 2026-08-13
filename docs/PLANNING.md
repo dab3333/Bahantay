@@ -42,9 +42,9 @@ Vercel Cron (Hobby plan confirmed — capped at once/day, ±59 min precision)
        - on fetch/parse failure: leaves last-known-good data untouched,
          no alerting — staleness is surfaced in the UI instead (§4)
 
-Storage: Vercel KV (Redis)
-   - latest_advisory: { text, issued_at, source_url, fetched_at }
-   - advisory_history: list of past { text, issued_at, source_url, fetched_at }
+Storage: Upstash Redis (Vercel Marketplace — "Vercel KV" was deprecated in favor of Marketplace integrations)
+   - latest_advisory: { text, issuedAt, sourceUrl, fetchedAt }
+   - advisory_history: list of past { text, issuedAt, sourceUrl, fetchedAt }
      entries, appended each successful run
 
 Static assets (bundled at build time, not fetched at runtime)
@@ -84,7 +84,7 @@ Recharts is added for an "advisory trends" view, scoped to what the data actuall
 
 | Decision | Choice | Notes |
 |---|---|---|
-| Storage backend | Vercel KV (Redis) | Stores latest advisory + a history list |
+| Storage backend | Upstash Redis via Vercel Marketplace | "Vercel KV" no longer exists as a native product — Marketplace integrations (Upstash, Neon, etc.) replaced it. Stores latest advisory + a history list. |
 | Cron interval | Daily Vercel Cron + on-request stale-while-revalidate | Confirmed on Hobby plan, which caps cron at once/day (±59 min precision) — sub-daily cron expressions fail deployment outright. Freshness goal met via revalidation on page/API requests instead. |
 | Map library | MapLibre GL | Vector-tile based, better suited to styled polygon overlays |
 | Gauging stations | Included in v1 | Static lat/lon markers, link out to PAGASA, no live reading |

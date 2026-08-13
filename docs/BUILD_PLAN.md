@@ -31,13 +31,13 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 2 — Storage Setup
-- [ ] Provision Vercel KV (Redis)
-- [ ] Define `latest_advisory` shape: `{ text, issued_at, source_url, fetched_at }`
-- [ ] Define `advisory_history` shape: append-only list of the above
+- [x] Provision Upstash Redis via Vercel Marketplace (`vercel install upstash/upstash-kv`)
+- [x] Define `latest_advisory` shape: `{ text, issuedAt, sourceUrl, fetchedAt }`
+- [x] Define `advisory_history` shape: append-only list of the above
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** "Vercel KV" is no longer a native product — replaced by Marketplace storage integrations. Provisioned Upstash Redis (`upstash-kv-coffee-flask`), connected to the `bahantay` project. Credentials land in `.env.local` as `KV_REST_API_URL` / `KV_REST_API_TOKEN` (not the `@upstash/redis` defaults `UPSTASH_REDIS_REST_URL`/`_TOKEN`), so `src/lib/storage.ts` constructs `Redis` explicitly rather than using `Redis.fromEnv()`. `advisory_history` implemented as a Redis list (`lpush` + `ltrim` capped at 500 entries), not a JSON document — simpler and avoids depending on the RedisJSON module. Local `.claude/skills` (symlinked from `.agents/skills`) now has `upstash-redis-js` and `upstash-ratelimit-js` guides installed by the integration.
 
 ---
 
@@ -65,8 +65,8 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 5 — Advisory API
-- [ ] `/api/advisory` reads `latest_advisory` from KV
-- [ ] Include `fetched_at` age in response for UI staleness display
+- [ ] `/api/advisory` reads `latest_advisory` via `getLatestAdvisory()` (`src/lib/storage.ts`)
+- [ ] Include `fetchedAt` age in response for UI staleness display
 
 **Status:** Not started
 **Completed:** —
@@ -87,7 +87,7 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 7 — Advisory Panel UI
 - [ ] Display latest advisory text, issued time, last-checked time
-- [ ] Visible stale-state treatment when `fetched_at` age exceeds threshold
+- [ ] Visible stale-state treatment when `fetchedAt` age exceeds threshold
 - [ ] Flat/minimal styling, no gradients, solid fills only
 
 **Status:** Not started

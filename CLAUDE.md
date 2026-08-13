@@ -24,7 +24,7 @@ Do this as part of finishing the work, not as a separate pass.
 
 - Next.js 16 (App Router, TypeScript, Tailwind v4), deployed on Vercel — see `AGENTS.md` for Next 16 breaking-change notes before writing framework code
 - Vercel Cron → `/api/cron/refresh` scrapes the PAGASA flood bulletin
-- Vercel KV (Redis) stores `latest_advisory` and `advisory_history`
+- Upstash Redis (via Vercel Marketplace — "Vercel KV" is no longer a native product) stores `latest_advisory` and `advisory_history` through `src/lib/storage.ts`. Credentials are `KV_REST_API_URL`/`KV_REST_API_TOKEN`, not `@upstash/redis`'s `Redis.fromEnv()` defaults.
 - Static NCR flood-susceptibility GeoJSON bundled as a build-time asset (not fetched at runtime)
 - MapLibre GL for the map
 - Recharts for the advisory-history analytics view (Phase 9) — charts must follow the same flat, no-gradient design constraints as the rest of the UI; load the `dataviz` skill before writing any chart code
@@ -33,7 +33,7 @@ Do this as part of finishing the work, not as a separate pass.
 
 - **Minimal, modern, flat. No gradients anywhere** — not in map polygon fills, buttons, cards, backgrounds, or chart fills. Solid fills only.
 - Risk-zone colors and chart series are solid, distinct hues — not a gradient ramp.
-- Every piece of advisory data shown must carry its `issued_at` / `fetched_at` timestamps. Staleness is shown visibly, never hidden.
+- Every piece of advisory data shown must carry its `issuedAt` / `fetchedAt` timestamps. Staleness is shown visibly, never hidden.
 - Never imply live, per-road, or real-time flood-depth data — the hazard layer is susceptibility, not current conditions.
 
 ## Data provenance rules

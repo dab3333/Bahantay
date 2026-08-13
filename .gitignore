@@ -45,3 +45,10 @@ next-env.d.ts
 
 # editor
 .vscode/
+
+.env*
+
+# auto-installed integration reference skills (regenerable via `vercel install`)
+.agents/
+.claude/
+skills-lock.json
