@@ -13,6 +13,7 @@ const redis = new Redis({
 const LATEST_KEY = "latest_advisory";
 const HISTORY_KEY = "advisory_history";
 const HISTORY_MAX_ENTRIES = 500;
+const REVALIDATE_LOCK_KEY = "advisory_revalidate_lock";
 
 export type Advisory = {
   /** e.g. "NCR/Pasig Marikina Laguna de Bay" — the basin row PAGASA reports this under */
@@ -40,4 +41,14 @@ export async function setLatestAdvisory(advisory: Advisory): Promise<void> {
 
 export async function getAdvisoryHistory(limit = 50): Promise<Advisory[]> {
   return redis.lrange<Advisory>(HISTORY_KEY, 0, limit - 1);
+}
+
+/**
+ * Claims a short-lived lock so concurrent stale-while-revalidate requests
+ * don't all trigger a PAGASA scrape at once. Only the caller that gets
+ * `true` back should scrape; everyone else just serves what's cached.
+ */
+export async function acquireRevalidateLock(ttlSeconds = 60): Promise<boolean> {
+  const acquired = await redis.set(REVALIDATE_LOCK_KEY, "1", { nx: true, ex: ttlSeconds });
+  return acquired === "OK";
 }

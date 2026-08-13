@@ -55,22 +55,22 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 4 — Cron Wiring
-- [ ] Add daily `crons` entry to `vercel.json` (Hobby-tier limit — confirmed in Phase 0)
-- [ ] Implement on-request stale-while-revalidate in `/api/advisory`: trigger a fresh scrape when cached data is older than ~20 min, capped to avoid hammering PAGASA
+- [x] Add daily `crons` entry to `vercel.json` (Hobby-tier limit — confirmed in Phase 0)
+- [x] Implement on-request stale-while-revalidate in `/api/advisory`: trigger a fresh scrape when cached data is older than ~20 min, capped to avoid hammering PAGASA
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** `vercel.json` cron hits `/api/cron/refresh` daily at `0 0 * * *`. Built together with Phase 5 since the SWR logic lives in `/api/advisory` itself — see that phase's notes for the concurrency-lock verification (`acquireRevalidateLock` in `src/lib/storage.ts`, `SET NX EX 60`). Threshold is 20 min, matching the ~15–30 min freshness goal from PLANNING.md §7.
 
 ---
 
 ## Phase 5 — Advisory API
-- [ ] `/api/advisory` reads `latest_advisory` via `getLatestAdvisory()` (`src/lib/storage.ts`)
-- [ ] Include `fetchedAt` age in response for UI staleness display
+- [x] `/api/advisory` reads `latest_advisory` via `getLatestAdvisory()` (`src/lib/storage.ts`)
+- [x] Include `fetchedAt` age in response for UI staleness display
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** Built ahead of schedule alongside Phase 4 — the route's whole purpose is the SWR/staleness logic. Response shape: `{ ok, advisory, ageMs, stale }`. Verified three scenarios against the live route in dev: (1) fresh cache → served as-is, no PAGASA hit; (2) backdated `fetchedAt` (30 min old, past the 20-min threshold) → triggered a real rescrape, `ageMs` dropped to <1s; (3) 5 concurrent requests against stale data → only 1 acquired the lock and rescraped, the other 4 got the stale cache immediately rather than piling on PAGASA. Returns `503` if no advisory has ever been stored (cold start before Phase 3's first successful scrape).
 
 ---
 
