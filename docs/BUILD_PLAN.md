@@ -19,14 +19,14 @@ Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
 ---
 
 ## Phase 1 — Static Hazard Data
-- [ ] Download DENR-MGB flood susceptibility map for NCR (shapefile/GeoJSON)
-- [ ] Simplify geometry with mapshaper to keep payload small
-- [ ] Commit simplified GeoJSON as a static asset
-- [ ] Maintain static gauging-station list (name, lat/lon, PAGASA link)
+- [x] Download flood hazard shapefile for NCR (Project NOAH 100-yr return period, via BetterGov.ph HF mirror — DENR-MGB bulk download doesn't exist publicly, see PLANNING.md §2 revision note)
+- [x] Simplify geometry with mapshaper to keep payload small
+- [x] Commit simplified GeoJSON as a static asset
+- [x] Maintain static gauging-station list (name, lat/lon, PAGASA link)
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** `public/data/ncr-flood-susceptibility.geojson` (6.4 MB raw, ~1 MB gzip) — 3 dissolved multipolygons (`risk`: low/moderate/high) from the Var field, simplified 0.8% weighted + cleaned with mapshaper, precision 0.0001. Attribution in `public/data/ATTRIBUTION.md` (ODC-ODbL, credit "Project NOAH and its contributors"). Gauging stations in `src/data/gauging-stations.ts` — 11 stations on Pasig/Marikina/Tullahan; coordinates are landmark geocodes via OSM Nominatim, explicitly flagged `precision: "approximate"` since PAGASA publishes no machine-readable station coordinates. Only the 5-yr/25-yr layers were skipped for v1 scope (Recharts/analytics or a return-period toggle could use them later — not currently downloaded).
 
 ---
 

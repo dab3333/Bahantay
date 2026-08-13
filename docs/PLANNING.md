@@ -17,10 +17,12 @@ This is honest about data provenance: some layers are static risk classification
 
 | Source | What it provides | Access method | Update cadence |
 |---|---|---|---|
-| DENR-MGB flood susceptibility map | Static hazard polygons (high/moderate/low) for NCR | One-time download (shapefile/GeoJSON), simplified and committed to repo | Never (static asset) |
+| Project NOAH flood hazard shapefiles (100-yr return period, Metro Manila), via BetterGov.ph's Hugging Face mirror | Static hazard polygons (low/moderate/high) for NCR | One-time download (Shapefile → GeoJSON via mapshaper), simplified and committed to repo | Never (static asset) |
 | PAGASA Flood Advisory/Outlook bulletin (pagasa.dost.gov.ph/flood) | Free-text advisory bulletin, issued time | HTML scrape (no documented public API) | Polled on a schedule |
-| PAGASA FFWS gauging stations | Station names/locations on Metro Manila rivers/creeks | Static list maintained by hand (lat/lon), linking out to PAGASA page — no live reading pulled | Static |
-| ProjectNOAH / ProjectLIGTAS | Reference only — not a data source we pull from directly | — | — |
+| PAGASA FFWS gauging stations (Pasig/Marikina/Tullahan) | Station names/rivers; coordinates geocoded from named landmarks via OSM Nominatim (not PAGASA's own pins — flagged `precision: "approximate"`) | Static list maintained by hand, linking out to the FFWS live map — no live reading pulled | Static |
+| ProjectLIGTAS | Reference only — used to cross-check station names, not pulled from directly | — | — |
+
+**Revision note:** the original plan named DENR-MGB's susceptibility map directly, but research (2026-08-13) found no government portal offers a bulk-downloadable version of it — HazardHunterPH is point-query only, and NAMRIA Geoportal is view-only. Project NOAH's shapefiles (DENR-MGB-era flood modeling, ODC-ODbL licensed, re-hosted by BetterGov.ph) are the actual usable substitute; see `public/data/ATTRIBUTION.md`.
 
 **Explicitly out of scope for v1:** MMDA X/Twitter posts (no usable free API tier), DPWH open data (project/spending data, not live status), any reverse-engineered non-public telemetry feed.
 
