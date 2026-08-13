@@ -1,3 +1,4 @@
+import { AdvisoryPanel } from "@/components/AdvisoryPanel";
 import { FloodMap } from "@/components/FloodMap";
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
       </header>
       <div className="relative flex-1">
         <FloodMap />
+        <AdvisoryPanel />
       </div>
     </div>
   );

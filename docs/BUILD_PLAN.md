@@ -100,13 +100,13 @@ Verification method: no `chromium-cli` tool was available, so used a scratch Pla
 ---
 
 ## Phase 7 — Advisory Panel UI
-- [ ] Display latest advisory text, issued time, last-checked time
-- [ ] Visible stale-state treatment when `fetchedAt` age exceeds threshold
-- [ ] Flat/minimal styling, no gradients, solid fills only
+- [x] Display latest advisory status, issued time, last-checked time
+- [x] Visible stale-state treatment when `fetchedAt` age exceeds threshold
+- [x] Flat/minimal styling, no gradients, solid fills only
 
-**Status:** Not started
-**Completed:** —
-**Notes:** —
+**Status:** Done
+**Completed:** 2026-08-13
+**Notes:** `src/components/AdvisoryPanel.tsx`, positioned top-left over the map (mirrors the hazard legend's bottom-left card styling). Client component: fetches `/api/advisory` on mount, refetches every 2 min, and re-renders relative time on a 30s tick without refetching. Shows a solid status dot (red for `flood`, green for `non-flood`, dim gray for `unknown` — reusing the `--risk-high`/`--risk-low` tokens, not a separate palette) plus the basin name, "Last checked X ago," and an honest "Issued time not published by PAGASA" line rather than hiding or fabricating that field (per PLANNING.md §6's no-fabricated-precision rule). Links out to the basin PDF (`detailUrl`) when present, else the PAGASA flood page. Stale state (age > 20 min, same threshold as the API route) switches the "last checked" line to `--risk-moderate` and appends "— may be out of date"; verified with a Playwright-mocked stale API response, and the fresh state verified against the live route — both screenshotted with zero console errors. `STALE_THRESHOLD_MS` is duplicated from `/api/advisory` by hand (client component, no shared config module) — keep the two in sync if either changes.
 
 ---
 
